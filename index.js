@@ -29,7 +29,7 @@ for(const file of commandFiles){
 
 
 var guilds = {};
-
+var subbed = ['Hanayome', 'Okarishimasu', 'Domestic', 'Study', 'Tales', 'Heroine', 'Kaguya', 'Gokushufudou', 'Wonder', 'Yuusha', 'Slightly'];
 
 
 client.login(token);
@@ -149,76 +149,181 @@ client.on('message', async message =>{
 
 		message.channel.send(body.file);
 	}
-	else if( command === 'subscribe'){
-		if(!args.length){
-			return message.channel.send('You need to supply a manga.');
-		}
+	else if (command === 'subscribe'){
+		subbed.push(args[0]);
+	}
+	else if( command === 'manga'){
 		const {body} = await snekfetch.get('https://reddit.com/r/manga/new/.json');
 		var ID = body.data.children[24].data.id;
 		var title = '';
 		var last = body.data.children[24].data.id;
 		while (true){
+			//if(last !== ID){
+			//	ID = last;
+			//}
+			try{
 			const {body} = await snekfetch.get('https://reddit.com/r/manga/new/.json?before=t3_'+ ID);
-			if(last !== ID){
-				ID = last;
-			}
-			for(var i = 0; i < body.data.dist; i++){
+			console.log(ID);
+			console.log(body.data.dist);
+			for(var i = body.data.dist - 1; i >= 0; i--){
 				title = body.data.children[i].data.title;
-				if(title.includes(args[0]) && title.includes('[DISC]')){
-					const embed = new Discord.RichEmbed()
-						.setTitle(body.data.children[i].data.title)
-						.setColor(0xFFFFFF)
-						.setURL(body.data.children[i].data.url);
-					message.channel.send(embed);
+				console.log(title);
+				var arrayLength = subbed.length;
+				if(title.includes('[DISC]') || title.includes('[Disc]')){
+					for(var j = 0; j < arrayLength; j++){
+						if(title.includes(subbed[j])){
+							console.log('found');
+							const embed = new Discord.RichEmbed()
+								.setTitle(body.data.children[i].data.title)
+								.setColor(0xFFFFFF)
+								.setURL(body.data.children[i].data.url);
+							message.channel.send(embed);
+						}
+					}
 				}
+				ID = body.data.children[i].data.id;
 			}
-			
 			
 			await delay(60000);
-			if(body.data.dist > 0){
-				ID = body.data.children[0].data.id;
+			if(true){
+				const{body} = await snekfetch.get('https://reddit.com/r/manga/new/.json?before=t3_'+ID);
+				if(body.data.dist === 0){
+					const{body} = await snekfetch.get('https://reddit.com/r/manga/new/.json');
+					ID = body.data.children[0].data.id;
+				}
 			}
-			else{
-				const {body} = await snekfetch.get('https://reddit.com/user/EyeOfTheStormLoL/m/animebot/new/.json');
-				last = body.data.children[0].data.id;
+			}
+			catch(err){
 			}
 		}
 	}
+	else if ( command === 'subbed'){
+		message.channel.send(subbed.toString());
+	
+	}
 	else if( command === 'waifus'){
-		const {body} = await snekfetch.get('https://reddit.com/user/EyeOfTheStormLoL/m/animebot/new/.json');
-		var ID = body.data.children[24].data.id;
-		var last = body.data.children[24].data.id;
+		//const {body} = await snekfetch.get('https://reddit.com/user/EyeOfTheStormLoL/m/animebot/top/.json?t=day');
+		var cache = [];
 		var title = '';
 		var remove = '';
 		while (true){
-			const {body} = await snekfetch.get('https://reddit.com/user/EyeOfTheStormLoL/m/animebot/new/.json?before=t3_'+ ID);
-			console.log(ID);
-			console.log(body.data.dist);
-			if(last !== ID){
-				ID = last;
-			}
-			for(var i = body.data.dist - 1; i >= 0; i--){
+			const {body} = await snekfetch.get('https://reddit.com/user/EyeOfTheStormLoL/m/animebot/top/.json?t=day&limit=100');
+			for(var i = 0; i < 96; i++){
 				title = body.data.children[i].data.url;
 				remove = body.data.children[i].data.title;
 				remove = remove.replace('&amp;', '&');
 				if(title.includes('https://imgur')){
 					title = title + '.gif';
-					
 				}
-				const embed = new Discord.RichEmbed()
-					.setTitle(remove)
-					.setColor(0xFFFFFF)
-					.setDescription(body.data.children[i].data.subreddit)
-					.setImage(title);
-				message.channel.send(embed);
+				if(title.length<256 && !cache.includes(title)){
+					const embed = new Discord.RichEmbed()
+						.setTitle(remove)
+						.setColor(0xFFFFFF)
+						.setDescription(body.data.children[i].data.subreddit)
+						.setImage(title);
+					if(title.includes('imgur') || title.includes('i.redd.it') ||title.includes('awwni.me') || title.includes('catgirlsare')){
+						message.channel.send(embed);
+					}
+					else{
+						message.channel.send(title);
+					}
+					cache.push(title);
+					if(cache.length > 100){
+						cache.shift();
+					}
+				}
+				else if( !cache.includes(title)){
+					message.channel.send(title);
+					cache.push(title);
+					if(cache.length > 100){
+						cache.shift();
+					}
+				}
+				await delay(900000);
 			}
-			await delay(60000);
-			if(body.data.dist > 0){
-				ID = body.data.children[0].data.id;
+		}
+	}
+	else if( command === 'hentai'){
+		//const {body} = await snekfetch.get('https://reddit.com/user/EyeOfTheStormLoL/m/animebot/top/.json?t=day');
+		var cache = [];
+		var title = '';
+		var remove = '';
+		while (true){
+			const {body} = await snekfetch.get('https://reddit.com/user/EyeOfTheStormLoL/m/animebot2/top/.json?t=day&limit=100');
+			for(var i = 0; i < 96; i++){
+				title = body.data.children[i].data.url;
+				remove = body.data.children[i].data.title;
+				remove = remove.replace('&amp;', '&');
+				if(title.includes('https://imgur')){
+					title = title + '.gif';
+				}
+				if(title.length<256 && !cache.includes(title)){
+					const embed = new Discord.RichEmbed()
+						.setTitle(remove)
+						.setColor(0xFFFFFF)
+						.setDescription(body.data.children[i].data.subreddit)
+						.setImage(title);
+					if(title.includes('imgur') || title.includes('i.redd.it') ||title.includes('awwni.me') || title.includes('catgirlsare')){
+						message.channel.send(embed);
+					}
+					else{
+						message.channel.send(title);
+					}
+					cache.push(title);
+					if(cache.length > 100){
+						cache.shift();
+					}
+				}
+				else if( !cache.includes(title)){
+					message.channel.send(title);
+					cache.push(title);
+					if(cache.length > 100){
+						cache.shift();
+					}
+				}
+				await delay(900000);
 			}
-			else{
-				const {body} = await snekfetch.get('https://reddit.com/user/EyeOfTheStormLoL/m/animebot/new/.json');
-				last = body.data.children[0].data.id;
+		}
+	}
+	else if( command === 'memes'){
+		//const {body} = await snekfetch.get('https://reddit.com/user/EyeOfTheStormLoL/m/animebot/top/.json?t=day');
+		var cache = [];
+		var title = '';
+		var remove = '';
+		while (true){
+			const {body} = await snekfetch.get('https://reddit.com/user/EyeOfTheStormLoL/m/animebot3/top/.json?t=day&limit=100');
+			for(var i = 0; i < 96; i++){
+				title = body.data.children[i].data.url;
+				remove = body.data.children[i].data.title;
+				remove = remove.replace('&amp;', '&');
+				if(title.includes('https://imgur')){
+					title = title + '.gif';
+				}
+				if(title.length<256 && !cache.includes(title)){
+					const embed = new Discord.RichEmbed()
+						.setTitle(remove)
+						.setColor(0xFFFFFF)
+						.setDescription(body.data.children[i].data.subreddit)
+						.setImage(title);
+					if(title.includes('imgur') || title.includes('i.redd.it') ||title.includes('awwni.me') || title.includes('catgirlsare')){
+						message.channel.send(embed);
+					}
+					else{
+						message.channel.send(title);
+					}
+					cache.push(title);
+					if(cache.length > 100){
+						cache.shift();
+					}
+				}
+				else if( !cache.includes(title)){
+					message.channel.send(title);
+					cache.push(title);
+					if(cache.length > 100){
+						cache.shift();
+					}
+				}
+				await delay(900000);
 			}
 		}
 	}
@@ -232,7 +337,7 @@ client.on('message', async message =>{
 	else if (command === 'optin'){
 		let role = message.guild.roles.find(r => r.name === "uwu");
 		let member = message.member;
-		member.addRole(role).catch(colsole.error);
+		member.addRole(role).catch(console.error);
 	}
 	else if (command === 'optout'){
 		let role = message.guild.roles.find(r => r.name === "uwu");
