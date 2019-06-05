@@ -29,7 +29,7 @@ for(const file of commandFiles){
 
 
 var guilds = {};
-var subbed = ['Hanayome', 'Okarishimasu', 'Domestic', 'Study', 'Tales', 'Heroine', 'Kaguya', 'Gokushufudou', 'Wonder', 'Yuusha', 'Slightly'];
+var subbed = ['Hanayome', 'Okarishimasu', 'Domestic', 'Study', 'Tales', 'Heroine', 'Kaguya', 'Gokushufudou', 'Wonder', 'Yuusha', 'Slightly', 'Tonikaku', 'Sankaku'];
 
 
 client.login(token);
@@ -171,7 +171,7 @@ client.on('message', async message =>{
 				var arrayLength = subbed.length;
 				if(title.includes('[DISC]') || title.includes('[Disc]')){
 					for(var j = 0; j < arrayLength; j++){
-						if(title.includes(subbed[j])){
+						if(title.includes(subbed[j]) || title.toLowerCase().includes(subbed[j].toLowerCase())){
 							console.log('found');
 							const embed = new Discord.RichEmbed()
 								.setTitle(body.data.children[i].data.title)
